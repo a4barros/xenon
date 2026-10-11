@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from fastapi import HTTPException
 
-from model.user import UserCreate, UserGet
+from model.user import UserCreate, UserGet, UserUpdate
 from repository.base import RepositoryBase # type: ignore
 
 
@@ -16,16 +16,16 @@ class UserRepository(RepositoryBase):
 
     UPDATE_USER_QUERY = """
         UPDATE users
-        SET authentication_key = %s,
-            salt = %s,
+        SET authentication_key = %(authentication_key)s,
+            salt = %(salt)s,
             updated_at = NOW()
-        WHERE username = %s
+        WHERE username = %(id)s
         RETURNING id, username, authentication_key, salt, created_at, updated_at
     """
 
     DELETE_USER_QUERY = """
         DELETE FROM users
-        WHERE username = %s
+        WHERE username = %(id)s
     """
 
     def __init__(self, connect: Callable[[], Any]):
@@ -42,17 +42,14 @@ class UserRepository(RepositoryBase):
 
     def change_password(
         self,
-        username: str,
-        new_authentication_key: str,
-        new_salt: str,
+        user_id: str,
+        user_update: UserUpdate,
     ) -> UserGet:
+        params = user_update.model_dump()
+        params["user_id"] = user_id
         row = self.fetch_one(
             self.UPDATE_USER_QUERY,
-            params=(
-                super()._to_bytes(new_authentication_key),
-                super()._to_bytes(new_salt),
-                username,
-            ),
+            params=params,
         )
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
@@ -61,11 +58,11 @@ class UserRepository(RepositoryBase):
     def get_one_user(self, username: str) -> UserGet:
         row = super().fetch_one(
             """
-            SELECT id, username, authentication_key, salt, created_at, updated_at
-            FROM users
-            WHERE username = %s
+                SELECT id, username, authentication_key, salt, created_at, updated_at
+                FROM users
+                WHERE username = %(username)s
             """,
-            params=(username,),
+            params={"username": username},
         )
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
@@ -74,7 +71,7 @@ class UserRepository(RepositoryBase):
     def delete_user(self, username: str) -> None:
         row = super().fetch_one(
             self.DELETE_USER_QUERY,
-            params=(username,),
+            params={"username": username},
         )
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")

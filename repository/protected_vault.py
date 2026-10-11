@@ -10,16 +10,16 @@ from repository.base import RepositoryBase # type: ignore
 class ProtectedVaultRepository(RepositoryBase):
     CREATE_PROTECTED_VAULT = """
         INSERT INTO protected_vault (user_id, encrypted_vault, iv)
-        VALUES (%s, %s, %s)
+        VALUES (%(user_id)s, %(encrypted_vault)s, %(iv)s)
         RETURNING id, user_id, encrypted_vault, iv, created_at, updated_at
     """
 
     UPDATE_PROTECTED_VAULT_CONTENTS = """
         UPDATE protected_vault
-        SET encrypted_vault = %s,
-            iv = %s,
+        SET encrypted_vault = %(encrypted_vault)s,
+            iv = %(iv)s,
             updated_at = NOW()
-        WHERE user_id = %s
+        WHERE user_id = %(user_id)s
         RETURNING id, user_id, encrypted_vault, iv, created_at, updated_at
     """
 
@@ -27,13 +27,11 @@ class ProtectedVaultRepository(RepositoryBase):
         super().__init__(connect)
 
     def create_protected_vault(self, user_id: str, protected_vault_create: ProtectedVaultCreate) -> ProtectedVaultGet:
+        params = protected_vault_create.model_dump()
+        params["user_id"] = user_id
         row = self.fetch_one(
             self.CREATE_PROTECTED_VAULT,
-            params=(
-                user_id,
-                super()._to_bytes(protected_vault_create.encrypted_vault),
-                super()._to_bytes(protected_vault_create.iv),
-            ),
+            params=params,
         )
         if row is None:
             raise ValueError("Protected vault could not be created")
@@ -48,11 +46,11 @@ class ProtectedVaultRepository(RepositoryBase):
 
         row = self.fetch_one(
             self.UPDATE_PROTECTED_VAULT_CONTENTS,
-            params=(
-                super()._to_bytes(vault_new_data.encrypted_vault),
-                super()._to_bytes(vault_new_data.iv),
-                vault_new_data.user_id,
-            ),
+            params={
+                "encrypted_vault": super()._to_bytes(vault_new_data.encrypted_vault),
+                "iv": super()._to_bytes(vault_new_data.iv),
+                "user_id": vault_new_data.user_id,
+            },
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Protected vault not found")
@@ -63,9 +61,9 @@ class ProtectedVaultRepository(RepositoryBase):
             """
             SELECT id, user_id, encrypted_vault, iv, created_at, updated_at
             FROM protected_vault
-            WHERE user_id = %s
+            WHERE user_id = %(user_id)s
             """,
-            params=(user_id,),
+            params={"user_id": user_id},
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Protected vault not found")

@@ -42,3 +42,8 @@ class UserGet(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    authentication_key: str
+    salt: str

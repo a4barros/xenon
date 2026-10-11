@@ -28,7 +28,7 @@ def create_user(
     
     created_user = repo_user.create_user(user_data)
     repo_master_key.create_master_key(created_user.id, user_data.protected_master_key)
-    repo_vault_key.create_protected_vault(created_user.id, user_data.protected_master_key)
+    repo_vault_key.create_protected_vault(created_user.id, user_data.protected_vault)
 
     return created_user
 

@@ -2,8 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from dependencies import get_protected_master_key_repository
-from model.protected_vault import ProtectedVaultUpdate
-from model.user import UserCreate
+from model.protected_master_key import ProtectedMasterKeyUpdate
 from repository.protected_master_key import ProtectedMasterKeyRepository
 
 
@@ -20,7 +19,7 @@ def get_protected_master_key(
 
 @protected_master_key_router.post("/{user_id}")
 def change_protected_master_key(
-    vault_new_data: ProtectedVaultUpdate,
+    vault_new_data: ProtectedMasterKeyUpdate,
     repo: Annotated[ProtectedMasterKeyRepository, Depends(get_protected_master_key_repository)]):
     return repo.change_master_key(vault_new_data)
 

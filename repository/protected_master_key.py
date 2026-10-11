@@ -15,22 +15,23 @@ from repository.base import RepositoryBase # type: ignore
 class ProtectedMasterKeyRepository(RepositoryBase):
     CREATE_MASTER_KEY_QUERY = """
         INSERT INTO protected_master_key (user_id, encrypted_master_key, iv, salt)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%(user_id)s, %(encrypted_master_key)s, %(iv)s, %(salt)s)
         RETURNING id, user_id, encrypted_master_key, iv, salt, created_at, updated_at
     """
 
     GET_ONE_MASTER_KEY_QUERY = """
-        SELECT * FROM protected_master_key
-        WHERE user_id = %s
+        SELECT id, user_id, encrypted_master_key, iv, salt, created_at, updated_at
+        FROM protected_master_key
+        WHERE user_id = %(user_id)s
     """
 
     UPDATE_MASTER_KEY_QUERY = """
         UPDATE protected_master_key
-        SET encrypted_master_key = %s,
-            iv = %s,
-            salt = %s,
+        SET encrypted_master_key = %(encrypted_master_key)s,
+            iv = %(iv)s,
+            salt = %(salt)s,
             updated_at = NOW()
-        WHERE user_id = %s
+        WHERE user_id = %(user_id)s
         RETURNING id, user_id, encrypted_master_key, iv, salt, created_at, updated_at
     """
 
@@ -40,12 +41,12 @@ class ProtectedMasterKeyRepository(RepositoryBase):
     def create_master_key(self, user_id: str, master_key_data: ProtectedMasterKeyCreate) -> ProtectedMasterKeyGet:
         row = self.fetch_one(
             self.CREATE_MASTER_KEY_QUERY,
-            params=(
-                user_id,
-                super()._to_bytes(master_key_data.encrypted_master_key),
-                super()._to_bytes(master_key_data.iv),
-                super()._to_bytes(master_key_data.salt),
-            ),
+            params={
+                "user_id": user_id,
+                "encrypted_master_key": super()._to_bytes(master_key_data.encrypted_master_key),
+                "iv": super()._to_bytes(master_key_data.iv),
+                "salt": super()._to_bytes(master_key_data.salt),
+            },
         )
         if row is None:
             raise ValueError("Master key could not be created")
@@ -55,15 +56,14 @@ class ProtectedMasterKeyRepository(RepositoryBase):
         self,
         new_master_key: ProtectedMasterKeyUpdate
     ) -> ProtectedMasterKeyGet:
-
         row = self.fetch_one(
             self.UPDATE_MASTER_KEY_QUERY,
-            params=(
-                super()._to_bytes(new_master_key.encrypted_master_key),
-                new_master_key.iv,
-                super()._to_bytes(new_master_key.salt),
-                new_master_key.user_id,
-            ),
+            params={
+                "encrypted_master_key": super()._to_bytes(new_master_key.encrypted_master_key),
+                "iv": super()._to_bytes(new_master_key.iv),
+                "salt": super()._to_bytes(new_master_key.salt),
+                "user_id": new_master_key.user_id,
+            },
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Master key not found")
@@ -72,7 +72,7 @@ class ProtectedMasterKeyRepository(RepositoryBase):
     def get_one_master_key(self, user_id: str) -> ProtectedMasterKeyGet:
         row = super().fetch_one(
             self.GET_ONE_MASTER_KEY_QUERY,
-            params=(user_id,),
+            params={"user_id": user_id},
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Master key not found")
