@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from dependencies import get_user_repository, get_protected_master_key_repository, \
 get_protected_vault_repository
 from model.user import UserCreate
@@ -26,9 +26,7 @@ def create_user(
     repo_master_key: Annotated[ProtectedMasterKeyRepository, Depends(get_protected_master_key_repository)],
     repo_vault_key: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)]):
     
-    created_user = repo_user.create_user(user_data)
-    repo_master_key.create_master_key(created_user.id, user_data.protected_master_key)
-    repo_vault_key.create_protected_vault(created_user.id, user_data.protected_vault)
+    created_user = atomic_user_create(user_data, repo_user, repo_master_key, repo_vault_key)
 
     return created_user
 
@@ -36,4 +34,21 @@ def create_user(
 def delete_user(
     username: str,
     repo: Annotated[UserRepository, Depends(get_user_repository)]):
-    return repo.delete_user(username)
+    return repo.delete_user_cascade(username)
+
+def atomic_user_create(
+    user_data: UserCreate,
+    repo_user: UserRepository,
+    repo_master_key: ProtectedMasterKeyRepository,
+    repo_vault_key: ProtectedVaultRepository
+):
+    created_user = repo_user.create_user(user_data)
+    
+    try:
+        repo_master_key.create_master_key(created_user.id, user_data.protected_master_key)
+        repo_vault_key.create_protected_vault(created_user.id, user_data.protected_vault)
+    except:
+        repo_user.delete_user_cascade(created_user)
+        raise HTTPException(status_code=500, detail="Failed to create user")
+
+    return created_user

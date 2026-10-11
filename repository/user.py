@@ -68,7 +68,7 @@ class UserRepository(RepositoryBase):
             raise HTTPException(status_code=404, detail="User not found")
         return UserGet.model_validate(row)
 
-    def delete_user(self, username: str) -> None:
+    def delete_user_cascade(self, username: str) -> None:
         row = super().fetch_one(
             self.DELETE_USER_QUERY,
             params={"username": username},
