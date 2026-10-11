@@ -21,7 +21,7 @@ class ProtectedVaultCreate(BaseModel):
 
     user_id: str
     encrypted_vault: str
-    iv: bytes
+    iv: str
 
 
 class ProtectedVaultGet(BaseModel):
