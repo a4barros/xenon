@@ -7,7 +7,8 @@ from repository.user import UserRepository
 
 
 user_router = APIRouter(
-    prefix="/user"
+    prefix="/user",
+    tags=["user"]
 )
 
 @user_router.get("/{username}")
@@ -23,7 +24,7 @@ def create_user(
     return repo.create_user(user_data)
 
 @user_router.delete("/{username}")
-def create_user(
+def delete_user(
     username: str,
     repo: Annotated[UserRepository, Depends(get_user_repository)]):
     return repo.delete_user(username)

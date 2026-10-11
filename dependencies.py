@@ -11,5 +11,5 @@ def get_user_repository() -> UserRepository:
 def get_protected_vault_repository() -> ProtectedVaultRepository:
     return ProtectedVaultRepository(connect)
 
-def get_protected_master_key() -> ProtectedMasterKeyRepository:
+def get_protected_master_key_repository() -> ProtectedMasterKeyRepository:
     return ProtectedMasterKeyRepository(connect)

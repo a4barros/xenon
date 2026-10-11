@@ -25,6 +25,14 @@ class ProtectedMasterKeyCreate(BaseModel):
     iv: str
     salt: str
 
+class ProtectedMasterKeyUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    user_id: str
+    encrypted_master_key: str
+    iv: str
+    salt: str
+
 
 class ProtectedMasterKeyGet(BaseModel):
     model_config = ConfigDict(extra="forbid")

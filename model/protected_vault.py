@@ -23,6 +23,12 @@ class ProtectedVaultCreate(BaseModel):
     encrypted_vault: str
     iv: str
 
+class ProtectedVaultUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    user_id: str
+    encrypted_vault: str
+    iv: str
 
 class ProtectedVaultGet(BaseModel):
     model_config = ConfigDict(extra="forbid")

@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from fastapi import HTTPException
 
-from model.protected_vault import ProtectedVault, ProtectedVaultCreate, ProtectedVaultGet
+from model.protected_vault import ProtectedVault, ProtectedVaultCreate, ProtectedVaultGet, ProtectedVaultUpdate
 from repository.base import RepositoryBase # type: ignore
 
 
@@ -41,19 +41,17 @@ class ProtectedVaultRepository(RepositoryBase):
 
     def update_protected_vault_contents(
         self,
-        new_contents: str,
-        iv: str,
-        user_id: str | None = None,
+        vault_new_data: ProtectedVaultUpdate,
     ) -> ProtectedVaultGet:
-        if user_id is None:
+        if vault_new_data.user_id is None:
             raise ValueError("user_id is required to update the protected vault")
 
         row = self.fetch_one(
             self.UPDATE_PROTECTED_VAULT_CONTENTS,
             params=(
-                super()._to_bytes(new_contents),
-                super()._to_bytes(iv),
-                user_id,
+                super()._to_bytes(vault_new_data.encrypted_vault),
+                super()._to_bytes(vault_new_data.iv),
+                vault_new_data.user_id,
             ),
         )
         if row is None:

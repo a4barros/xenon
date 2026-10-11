@@ -7,6 +7,7 @@ from model.protected_master_key import (
     ProtectedMasterKey,
     ProtectedMasterKeyCreate,
     ProtectedMasterKeyGet,
+    ProtectedMasterKeyUpdate,
 )
 from repository.base import RepositoryBase # type: ignore
 
@@ -16,6 +17,11 @@ class ProtectedMasterKeyRepository(RepositoryBase):
         INSERT INTO protected_master_key (user_id, encrypted_master_key, iv, salt)
         VALUES (%s, %s, %s, %s)
         RETURNING id, user_id, encrypted_master_key, iv, salt, created_at, updated_at
+    """
+
+    GET_ONE_MASTER_KEY_QUERY = """
+        SELECT * FROM protected_master_key
+        WHERE user_id = %s
     """
 
     UPDATE_MASTER_KEY_QUERY = """
@@ -47,44 +53,26 @@ class ProtectedMasterKeyRepository(RepositoryBase):
 
     def change_master_key(
         self,
-        username: str,
-        new_authentication_key: str,
-        new_salt: str,
+        new_master_key: ProtectedMasterKeyUpdate
     ) -> ProtectedMasterKeyGet:
-        current = self.fetch_one(
-            """
-            SELECT pmk.id, pmk.user_id, pmk.encrypted_master_key, pmk.iv, pmk.salt, pmk.created_at, pmk.updated_at
-            FROM protected_master_key pmk
-            JOIN users u ON u.id = pmk.user_id
-            WHERE u.username = %s
-            """,
-            params=(username,),
-        )
-        if current is None:
-            raise HTTPException(status_code=404, detail="Master key not found")
 
         row = self.fetch_one(
             self.UPDATE_MASTER_KEY_QUERY,
             params=(
-                super()._to_bytes(new_authentication_key),
-                current["iv"],
-                super()._to_bytes(new_salt),
-                current["user_id"],
+                super()._to_bytes(new_master_key.encrypted_master_key),
+                new_master_key.iv,
+                super()._to_bytes(new_master_key.salt),
+                new_master_key.user_id,
             ),
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Master key not found")
         return ProtectedMasterKeyGet.model_validate(row)
 
-    def get_one_master_key(self, username: str) -> ProtectedMasterKeyGet:
+    def get_one_master_key(self, user_id: str) -> ProtectedMasterKeyGet:
         row = super().fetch_one(
-            """
-            SELECT pmk.id, pmk.user_id, pmk.encrypted_master_key, pmk.iv, pmk.salt, pmk.created_at, pmk.updated_at
-            FROM protected_master_key pmk
-            JOIN users u ON u.id = pmk.user_id
-            WHERE u.username = %s
-            """,
-            params=(username,),
+            self.GET_ONE_MASTER_KEY_QUERY,
+            params=(user_id,),
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Master key not found")
