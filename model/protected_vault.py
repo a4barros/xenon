@@ -1,0 +1,36 @@
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+
+class ProtectedVault(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    user_id: str
+    encrypted_vault: bytes
+    iv: bytes
+
+    created_at: datetime
+    updated_at: datetime
+
+
+class ProtectedVaultCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    user_id: str
+    encrypted_vault: str
+    iv: bytes
+
+
+class ProtectedVaultGet(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    user_id: str
+    encrypted_vault: str
+    iv: str
+
+    created_at: datetime
+    updated_at: datetime

@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql://xenon:xenon@db:5432/xenon
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: xenon
+      POSTGRES_USER: xenon
+      POSTGRES_PASSWORD: xenon
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xenon -d xenon"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
