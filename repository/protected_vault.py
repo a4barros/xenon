@@ -39,17 +39,16 @@ class ProtectedVaultRepository(RepositoryBase):
 
     def update_protected_vault_contents(
         self,
+        user_id, 
         vault_new_data: ProtectedVaultUpdate,
     ) -> ProtectedVaultGet:
-        if vault_new_data.user_id is None:
-            raise ValueError("user_id is required to update the protected vault")
 
         row = self.fetch_one(
             self.UPDATE_PROTECTED_VAULT_CONTENTS,
             params={
                 "encrypted_vault": super()._to_bytes(vault_new_data.encrypted_vault),
                 "iv": super()._to_bytes(vault_new_data.iv),
-                "user_id": vault_new_data.user_id,
+                "user_id": user_id,
             },
         )
         if row is None:

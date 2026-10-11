@@ -20,6 +20,7 @@ def get_protected_master_key(
 @protected_master_key_router.post("/{user_id}")
 def change_protected_master_key(
     vault_new_data: ProtectedMasterKeyUpdate,
+    user_id: str,
     repo: Annotated[ProtectedMasterKeyRepository, Depends(get_protected_master_key_repository)]):
-    return repo.change_master_key(vault_new_data)
+    return repo.change_master_key(user_id, vault_new_data)
 

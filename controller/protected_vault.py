@@ -21,6 +21,7 @@ def get_protected_vault(
 @protected_vault_router.post("/{user_id}")
 def update_protected_vault_contents(
     vault_new_data: ProtectedVaultUpdate,
+    user_id: str,
     repo: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)]):
-    return repo.update_protected_vault_contents(vault_new_data)
+    return repo.update_protected_vault_contents(user_id, vault_new_data)
 

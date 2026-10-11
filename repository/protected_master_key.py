@@ -54,6 +54,7 @@ class ProtectedMasterKeyRepository(RepositoryBase):
 
     def change_master_key(
         self,
+        user_id: str,
         new_master_key: ProtectedMasterKeyUpdate
     ) -> ProtectedMasterKeyGet:
         row = self.fetch_one(
@@ -62,7 +63,7 @@ class ProtectedMasterKeyRepository(RepositoryBase):
                 "encrypted_master_key": super()._to_bytes(new_master_key.encrypted_master_key),
                 "iv": super()._to_bytes(new_master_key.iv),
                 "salt": super()._to_bytes(new_master_key.salt),
-                "user_id": new_master_key.user_id,
+                "user_id": user_id
             },
         )
         if row is None:
