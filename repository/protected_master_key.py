@@ -37,11 +37,11 @@ class ProtectedMasterKeyRepository(RepositoryBase):
     def __init__(self, connect: Callable[[], Any]):
         super().__init__(connect)
 
-    def create_master_key(self, master_key_data: ProtectedMasterKeyCreate) -> ProtectedMasterKeyGet:
+    def create_master_key(self, user_id: str, master_key_data: ProtectedMasterKeyCreate) -> ProtectedMasterKeyGet:
         row = self.fetch_one(
             self.CREATE_MASTER_KEY_QUERY,
             params=(
-                master_key_data.user_id,
+                user_id,
                 super()._to_bytes(master_key_data.encrypted_master_key),
                 super()._to_bytes(master_key_data.iv),
                 super()._to_bytes(master_key_data.salt),

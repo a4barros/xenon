@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import UUID4, BaseModel, ConfigDict, Field
 
 
 
 class ProtectedMasterKey(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    id: str
-    user_id: str
+    id: UUID4
+    user_id: UUID4
     encrypted_master_key: bytes
     iv: bytes
     salt: bytes
@@ -20,7 +20,6 @@ class ProtectedMasterKey(BaseModel):
 class ProtectedMasterKeyCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    user_id: str
     encrypted_master_key: str
     iv: str
     salt: str
@@ -28,7 +27,7 @@ class ProtectedMasterKeyCreate(BaseModel):
 class ProtectedMasterKeyUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    user_id: str
+    user_id: UUID4
     encrypted_master_key: str
     iv: str
     salt: str
@@ -37,8 +36,8 @@ class ProtectedMasterKeyUpdate(BaseModel):
 class ProtectedMasterKeyGet(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    id: str
-    user_id: str
+    id: UUID4
+    user_id: UUID4
     encrypted_master_key: str
     iv: str
     salt: str

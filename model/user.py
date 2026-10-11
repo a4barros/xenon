@@ -1,6 +1,11 @@
+import base64
 from datetime import datetime
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, UUID4
+
+from model.protected_master_key import ProtectedMasterKeyCreate
+from model.protected_vault import ProtectedVaultCreate
 
 
 
@@ -23,6 +28,8 @@ class UserCreate(BaseModel):
     authentication_key: str
     salt: str
 
+    protected_master_key: ProtectedMasterKeyCreate
+    protected_vault: ProtectedVaultCreate
 
 class UserGet(BaseModel):
     model_config = ConfigDict(extra="forbid")

@@ -10,7 +10,7 @@ from repository.base import RepositoryBase # type: ignore
 class UserRepository(RepositoryBase):
     CREATE_USER_QUERY = """
         INSERT INTO users (username, authentication_key, salt)
-        VALUES (%s, %s, %s)
+        VALUES (%(username)s, %(authentication_key)s, %(salt)s)
         RETURNING id, username, authentication_key, salt, created_at, updated_at
     """
 
@@ -34,11 +34,7 @@ class UserRepository(RepositoryBase):
     def create_user(self, user_data: UserCreate) -> UserGet:
         row = self.fetch_one(
             self.CREATE_USER_QUERY,
-            params=(
-                user_data.username,
-                super()._to_bytes(user_data.authentication_key),
-                super()._to_bytes(user_data.salt),
-            ),
+            params=user_data.model_dump(),
         )
         if row is None:
             raise ValueError("User could not be created")

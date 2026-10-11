@@ -26,11 +26,11 @@ class ProtectedVaultRepository(RepositoryBase):
     def __init__(self, connect: Callable[[], Any]):
         super().__init__(connect)
 
-    def create_protected_vault(self, protected_vault_create: ProtectedVaultCreate) -> ProtectedVaultGet:
+    def create_protected_vault(self, user_id: str, protected_vault_create: ProtectedVaultCreate) -> ProtectedVaultGet:
         row = self.fetch_one(
             self.CREATE_PROTECTED_VAULT,
             params=(
-                protected_vault_create.user_id,
+                user_id,
                 super()._to_bytes(protected_vault_create.encrypted_vault),
                 super()._to_bytes(protected_vault_create.iv),
             ),
