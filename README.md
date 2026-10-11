@@ -9,8 +9,8 @@ E2E encrypted password manager.
 1. Deploy the database container
 
 ```bash
-docker compose build db
-docker compose up db -d
+docker compose build db migrate
+docker compose up db migrate -d
 ```
 
 2. Activate the venv and install dependencies

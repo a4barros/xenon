@@ -1,4 +1,15 @@
 services:
+  migrate:
+    build: .
+    command: python migrate.py
+    environment:
+      DATABASE_URL: postgresql://xenon:xenon@db:5432/xenon
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
   app:
     build: .
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
@@ -9,8 +20,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   db:
     image: postgres:17
