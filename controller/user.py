@@ -48,7 +48,8 @@ def atomic_user_create(
         repo_master_key.create_master_key(created_user.id, user_data.protected_master_key)
         repo_vault_key.create_protected_vault(created_user.id, user_data.protected_vault)
     except:
-        repo_user.delete_user_cascade(created_user)
+        repo_user.delete_user_cascade(user_data.username)
+    finally:
         raise HTTPException(status_code=500, detail="Failed to create user")
 
     return created_user
