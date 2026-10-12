@@ -28,8 +28,10 @@ async function sendProtectedPayloadToServer(username, authenticationKey, protect
         "protected_vault": protectedVault
     }
     await fetch(`${BASE_URL}/user/`, {
-        "content-type": "application/json",
         "body": JSON.stringify(payload),
+        "headers": {
+            "Content-Type": "application/json",
+        },
         "method": "POST",
     });
 }

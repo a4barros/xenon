@@ -25,20 +25,28 @@ class UserRepository(RepositoryBase):
 
     DELETE_USER_QUERY = """
         DELETE FROM users
-        WHERE id = %(id)s
+        WHERE username = %(username)s
+        RETURNING id
     """
 
     def __init__(self, connect: Callable[[], Any]):
         super().__init__(connect)
 
     def create_user(self, user_data: UserCreate) -> UserGet:
+        params = user_data.model_dump(
+            exclude={"protected_master_key", "protected_vault"}
+        )
+        params["authentication_key"] = super()._to_bytes(params["authentication_key"])
+        params["salt"] = super()._to_bytes(params["salt"])
         row = self.fetch_one(
             self.CREATE_USER_QUERY,
-            params=user_data.model_dump(),
+            params=params,
         )
         if row is None:
             raise ValueError("User could not be created")
-        return UserGet.model_validate(row)
+        return UserGet.model_validate(
+            self._encode_binary_fields(row, "authentication_key", "salt")
+        )
 
     def change_password(
         self,
@@ -53,7 +61,9 @@ class UserRepository(RepositoryBase):
         )
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return UserGet.model_validate(row)
+        return UserGet.model_validate(
+            self._encode_binary_fields(row, "authentication_key", "salt")
+        )
 
     def get_one_user(self, username: str) -> UserGet:
         row = super().fetch_one(
@@ -66,7 +76,9 @@ class UserRepository(RepositoryBase):
         )
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return UserGet.model_validate(row)
+        return UserGet.model_validate(
+            self._encode_binary_fields(row, "authentication_key", "salt")
+        )
 
     def delete_user_cascade(self, username: str) -> None:
         row = super().fetch_one(
@@ -76,4 +88,3 @@ class UserRepository(RepositoryBase):
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
         
-

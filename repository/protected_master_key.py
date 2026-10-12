@@ -1,4 +1,3 @@
-import base64
 from typing import Any, Callable
 
 from fastapi import HTTPException
@@ -50,7 +49,11 @@ class ProtectedMasterKeyRepository(RepositoryBase):
         )
         if row is None:
             raise ValueError("Master key could not be created")
-        return ProtectedMasterKeyGet.model_validate(row)
+        return ProtectedMasterKeyGet.model_validate(
+            self._encode_binary_fields(
+                row, "encrypted_master_key", "iv", "salt"
+            )
+        )
 
     def change_master_key(
         self,
@@ -68,7 +71,11 @@ class ProtectedMasterKeyRepository(RepositoryBase):
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Master key not found")
-        return ProtectedMasterKeyGet.model_validate(row)
+        return ProtectedMasterKeyGet.model_validate(
+            self._encode_binary_fields(
+                row, "encrypted_master_key", "iv", "salt"
+            )
+        )
 
     def get_one_master_key(self, user_id: str) -> ProtectedMasterKeyGet:
         row = super().fetch_one(
@@ -77,6 +84,10 @@ class ProtectedMasterKeyRepository(RepositoryBase):
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Master key not found")
-        return ProtectedMasterKeyGet.model_validate(row)
+        return ProtectedMasterKeyGet.model_validate(
+            self._encode_binary_fields(
+                row, "encrypted_master_key", "iv", "salt"
+            )
+        )
 
     

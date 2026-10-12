@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from dependencies import get_user_repository, get_protected_master_key_repository, \
 get_protected_vault_repository
 from model.user import UserCreate
@@ -43,13 +43,14 @@ def atomic_user_create(
     repo_vault_key: ProtectedVaultRepository
 ):
     created_user = repo_user.create_user(user_data)
-    
+
+    creation_completed = False
     try:
         repo_master_key.create_master_key(created_user.id, user_data.protected_master_key)
         repo_vault_key.create_protected_vault(created_user.id, user_data.protected_vault)
-    except:
-        repo_user.delete_user_cascade(user_data.username)
+        creation_completed = True
     finally:
-        raise HTTPException(status_code=500, detail="Failed to create user")
+        if not creation_completed:
+            repo_user.delete_user_cascade(user_data.username)
 
     return created_user

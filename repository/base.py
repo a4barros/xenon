@@ -17,6 +17,15 @@ class RepositoryBase:
     def _to_base64(value: bytes) -> str:
         return base64.b64encode(value).decode("utf-8")
 
+    @classmethod
+    def _encode_binary_fields(
+        cls, row: dict[str, Any], *field_names: str
+    ) -> dict[str, Any]:
+        return {
+            **row,
+            **{name: cls._to_base64(row[name]) for name in field_names},
+        }
+
     def execute(self, query: str, params: tuple | list | None = None, **kwargs):
         try:
             with self.connect() as connection:

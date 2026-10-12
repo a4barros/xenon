@@ -1,4 +1,3 @@
-import base64
 from typing import Any, Callable
 
 from fastapi import HTTPException
@@ -27,7 +26,12 @@ class ProtectedVaultRepository(RepositoryBase):
         super().__init__(connect)
 
     def create_protected_vault(self, user_id: str, protected_vault_create: ProtectedVaultCreate) -> ProtectedVaultGet:
-        params = protected_vault_create.model_dump()
+        params = {
+            "encrypted_vault": super()._to_bytes(
+                protected_vault_create.encrypted_vault
+            ),
+            "iv": super()._to_bytes(protected_vault_create.iv),
+        }
         params["user_id"] = user_id
         row = self.fetch_one(
             self.CREATE_PROTECTED_VAULT,
@@ -35,7 +39,9 @@ class ProtectedVaultRepository(RepositoryBase):
         )
         if row is None:
             raise ValueError("Protected vault could not be created")
-        return ProtectedVaultGet.model_validate(row)
+        return ProtectedVaultGet.model_validate(
+            self._encode_binary_fields(row, "encrypted_vault", "iv")
+        )
 
     def update_protected_vault_contents(
         self,
@@ -53,7 +59,9 @@ class ProtectedVaultRepository(RepositoryBase):
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Protected vault not found")
-        return ProtectedVaultGet.model_validate(row)
+        return ProtectedVaultGet.model_validate(
+            self._encode_binary_fields(row, "encrypted_vault", "iv")
+        )
 
     def get_one_protected_vault(self, user_id: str) -> ProtectedVaultGet:
         row = super().fetch_one(
@@ -66,7 +74,9 @@ class ProtectedVaultRepository(RepositoryBase):
         )
         if row is None:
             raise HTTPException(status_code=404, detail="Protected vault not found")
-        return ProtectedVaultGet.model_validate(row)
+        return ProtectedVaultGet.model_validate(
+            self._encode_binary_fields(row, "encrypted_vault", "iv")
+        )
 
 
     

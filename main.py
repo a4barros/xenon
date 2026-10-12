@@ -19,7 +19,7 @@ from controller.master_key import protected_master_key_router
 app = FastAPI(title="Xenon", version="0.0.1")
 
 origins = [
-    "localhost:8000"
+    "http://localhost:9000"
 ]
 
 app.add_middleware(
