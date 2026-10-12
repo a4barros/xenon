@@ -19,13 +19,13 @@ class UserRepository(RepositoryBase):
         SET authentication_key = %(authentication_key)s,
             salt = %(salt)s,
             updated_at = NOW()
-        WHERE username = %(id)s
+        WHERE id = %(id)s
         RETURNING id, username, authentication_key, salt, created_at, updated_at
     """
 
     DELETE_USER_QUERY = """
         DELETE FROM users
-        WHERE username = %(id)s
+        WHERE id = %(id)s
     """
 
     def __init__(self, connect: Callable[[], Any]):
