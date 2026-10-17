@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from dependencies import get_protected_vault_repository
 from model.protected_vault import ProtectedVaultUpdate
-from model.user import UserCreate
 from repository.protected_vault import ProtectedVaultRepository
+from security.jwtToken import authenticate_jwt_or_fail
 
 
 protected_vault_router = APIRouter(
@@ -12,16 +12,16 @@ protected_vault_router = APIRouter(
     tags=["vault"]
 )
 
-@protected_vault_router.get("/{user_id}")
+@protected_vault_router.get("/")
 def get_protected_vault(
-    user_id: str,
-    repo: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)]):
+    repo: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)],
+    user_id: Annotated[str, Depends(authenticate_jwt_or_fail)],):
     return repo.get_one_protected_vault(user_id)
 
-@protected_vault_router.post("/{user_id}")
+@protected_vault_router.post("/")
 def update_protected_vault_contents(
     vault_new_data: ProtectedVaultUpdate,
-    user_id: str,
-    repo: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)]):
+    repo: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)],
+    user_id: Annotated[str, Depends(authenticate_jwt_or_fail)]
+):
     return repo.update_protected_vault_contents(user_id, vault_new_data)
-

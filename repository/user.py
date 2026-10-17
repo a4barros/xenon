@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from fastapi import HTTPException
 
-from model.user import UserCreate, UserGet, UserUpdate
+from model.user import UserCreate, UserGet, UserGetSalt, UserUpdate
 from repository.base import RepositoryBase # type: ignore
 
 
@@ -78,6 +78,36 @@ class UserRepository(RepositoryBase):
             raise HTTPException(status_code=404, detail="User not found")
         return UserGet.model_validate(
             self._encode_binary_fields(row, "authentication_key", "salt")
+        )
+
+    def get_one_user_by_id(self, user_id: str) -> UserGet:
+        row = super().fetch_one(
+            """
+                SELECT id, username, authentication_key, salt, created_at, updated_at
+                FROM users
+                WHERE id = %(user_id)s
+            """,
+            params={"user_id": user_id},
+        )
+        if row is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return UserGet.model_validate(
+            self._encode_binary_fields(row, "authentication_key", "salt")
+        )
+
+    def get_user_salt(self, username: str) -> UserGetSalt:
+        row = super().fetch_one(
+            """
+                SELECT salt
+                FROM users
+                WHERE username = %(username)s
+            """,
+            params={"username": username},
+        )
+        if row is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return UserGetSalt.model_validate(
+            self._encode_binary_fields(row, "salt")
         )
 
     def delete_user_cascade(self, username: str) -> None:

@@ -43,5 +43,16 @@ pip install -r requirements.txt
 
 ### 3. Run in dev mode with debugger and hot reload enabled
 
+Set `JWT_SECRET_KEY` to a random value of at least 32 bytes before starting the
+server, for example with `export JWT_SECRET_KEY="$(openssl rand -hex 32)"`.
+
 Click on the "Run and debug" button on VSCode to run the server using the config
 provided on `.vscode/launch.json`
+
+### Authentication
+
+Fetch `/user/{username}/salt`, derive the authentication key in the client, then
+POST it as the `password` form field with the `username` field to `/user/token`.
+The response contains an OAuth2 bearer `access_token`; send it in the
+`Authorization: Bearer <access_token>` header when accessing user, vault, or
+master-key endpoints. Tokens expire after 30 minutes.
