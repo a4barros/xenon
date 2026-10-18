@@ -1,8 +1,7 @@
-import {generateAuthenticationKey, generateMasterKey} from "./security/key.js"
+import {generateAuthenticationKey, generateMasterKey} from "./security/keyGen.js"
 import {protectMasterKey, protectVault} from "./security/encryption.js"
+import {BASE_URL} from "./security/baseUrl.js"
 
-
-const BASE_URL = "http://localhost:8000"
 
 document.getElementById("createAccount").addEventListener("click", async function (event) {
     const username = document.getElementById("username").value;

@@ -42,7 +42,4 @@ async function generateMasterKey() {
 }
 
 
-
-
-
 export { generateAuthenticationKey, generateMasterKey };

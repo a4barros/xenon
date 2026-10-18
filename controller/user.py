@@ -1,4 +1,5 @@
 import hmac
+import os
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,6 +14,7 @@ from security.jwtToken import (
     TokenResponse,
     authenticate_jwt_or_fail,
     create_access_token,
+    ensure_enabled_creation_and_deletion,
     fail,
 )
 
@@ -62,6 +64,8 @@ def create_user(
     repo_user: Annotated[UserRepository, Depends(get_user_repository)],
     repo_master_key: Annotated[ProtectedMasterKeyRepository, Depends(get_protected_master_key_repository)],
     repo_vault_key: Annotated[ProtectedVaultRepository, Depends(get_protected_vault_repository)]):
+
+    ensure_enabled_creation_and_deletion()
     
     created_user = atomic_user_create(user_data, repo_user, repo_master_key, repo_vault_key)
 
@@ -72,6 +76,8 @@ def delete_user(
     repo: Annotated[UserRepository, Depends(get_user_repository)],
     user_id: Annotated[str, Depends(authenticate_jwt_or_fail)],
 ):
+    ensure_enabled_creation_and_deletion()
+
     return repo.delete_user_cascade(user_id)
 
 def atomic_user_create(

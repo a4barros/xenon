@@ -36,6 +36,13 @@ def fail() -> NoReturn:
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+def ensure_enabled_creation_and_deletion():
+    if not os.environ.get("ENABLE_ACCOUNT_CREATION_DELETION"):
+        raise HTTPException(
+            status_code=401,
+            detail="Account creation is disabled",
+        )
+
 
 def create_access_token(user_id: str) -> str:
     expires_at = datetime.now(timezone.utc) + timedelta(
